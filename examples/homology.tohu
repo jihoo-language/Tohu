@@ -1,0 +1,90 @@
+// Integer homology of complexes built from time loops.
+
+type Bool  = 1 + 1;
+type Three = 1 + Bool;
+type Five  = Bool + Three;
+type Fermi = 1 + Psi;
+
+// ---------- the real projective plane ----------
+// Its cellular complex has one cell in each dimension, with boundary maps
+// 2 and 0. Both are loops: over two even histories, and over a bootstrap that
+// annihilates with its fermionic twin.
+def twice : 1 <-> 1 = loop[Bool] id;
+def never : 1 <-> 1 = loop[Fermi] id;
+// The complex C2 -> C1 -> C0. Homology is listed in the same order.
+homology twice, never;
+
+// ---------- a fermion, and how to remove it ----------
+// A site is empty or full. A differential is odd, so it is written as an even
+// map that puts a fermion `psi` on the right.
+type Site = 1 + Psi;
+type Tag  = Site * Psi;
+
+// Every value of Site has a place in Tag with the same parity. The empty
+// site needs a fermion pair, made by `cup`.
+def pair : Site <-> Tag = (cup + unitil*) ; swap+ ; factorl;
+table pair;
+
+// The annihilator should send the empty site to tohu. No permutation does
+// that, but a trace can: the trace of a permutation counts its fixed points.
+// The control rotates three feedback values when the site is empty (no fixed
+// point) and exchanges two of them when it is full (one fixed point).
+def rot  : Three <-> Three = assocl+ ; swap+;
+def flip : Three <-> Three = id + swap+;
+def ann : Site <-> Tag =
+  loop[Three] (distl ; ((id * rot) + (id * flip)) ; factorl ; (pair * id));
+table ann;
+
+// A weight is the dimension of a feedback type.
+def ann4  : Site <-> Tag = ann ; loop[Bool * Bool] id;
+def ann6  : Site <-> Tag = ann ; loop[Bool * Three] id;
+def ann10 : Site <-> Tag = ann ; loop[Bool * Five] id;
+def ann15 : Site <-> Tag = ann ; loop[Three * Five] id;
+def ann12 : Site <-> Tag = ann ; loop[Bool * (Bool * Three)] id;
+def ann18 : Site <-> Tag = ann ; loop[Three * (Bool * Three)] id;
+def ann30 : Site <-> Tag = ann ; loop[Five * (Bool * Three)] id;
+
+// ---------- the Koszul complex ----------
+// On several sites the differential removes one fermion from some site and
+// carries it to the far right. Carrying it past the sites to the right of it
+// costs one sign per fermion there, through `swap*`. That sign is the one
+// that makes the boundary square to zero. The two choices are added by a
+// loop over Bool.
+type F2 = Site * Site;
+type F3 = Site * F2;
+
+def d_4_6 : F2 <-> F2 * Psi =
+  loop[Bool] (swap* ; distl
+    ; ((id * ((ann4 * id) ; assocr* ; (id * swap*) ; assocl*))
+       + (id * ((id * ann6) ; assocl*)))
+    ; factorl ; swap*);
+table d_4_6;
+// The homology is (Z/g)^(2^(n-1)) for g the gcd of the weights.
+homology d_4_6;
+
+def d_10_15 : F2 <-> F2 * Psi =
+  loop[Bool] (swap* ; distl
+    ; ((id * ((ann10 * id) ; assocr* ; (id * swap*) ; assocl*))
+       + (id * ((id * ann15) ; assocl*)))
+    ; factorl ; swap*);
+homology d_10_15;
+
+// No two of 6, 10 and 15 are coprime, but all three together are.
+def d_6_10_15 : F3 <-> F3 * Psi =
+  loop[Bool] (swap* ; distl
+    ; ((id * ((ann6 * id) ; assocr* ; (id * swap*) ; assocl*))
+       + (id * ((id * d_10_15) ; assocl*)))
+    ; factorl ; swap*);
+homology d_6_10_15;
+
+def d_18_30 : F2 <-> F2 * Psi =
+  loop[Bool] (swap* ; distl
+    ; ((id * ((ann18 * id) ; assocr* ; (id * swap*) ; assocl*))
+       + (id * ((id * ann30) ; assocl*)))
+    ; factorl ; swap*);
+def d_12_18_30 : F3 <-> F3 * Psi =
+  loop[Bool] (swap* ; distl
+    ; ((id * ((ann12 * id) ; assocr* ; (id * swap*) ; assocl*))
+       + (id * ((id * d_18_30) ; assocl*)))
+    ; factorl ; swap*);
+homology d_12_18_30;

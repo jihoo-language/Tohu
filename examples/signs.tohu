@@ -1,0 +1,50 @@
+// Histories are counted, not chosen. A fermionic history counts -1.
+
+type Bool  = 1 + 1;
+// One even and one odd feedback value: dimension 1 - 1 = 0.
+type Fermi = 1 + Psi;
+
+def not : Bool <-> Bool = swap+;
+
+// There is no minus sign and there are no scalars. A loop over U is the
+// supertrace over U, so `loop[U] id` multiplies by the dimension of U.
+def neg  : Bool <-> Bool = loop[Psi] id;
+def two  : Bool <-> Bool = loop[Bool] id;
+def void : Bool <-> Bool = loop[Fermi] id;
+run neg (inl ());
+run two (inl ()) - inr ();
+// Aporia rejects `loop id` as a bootstrap with two pasts. Here the even
+// bootstrap and its fermionic twin annihilate.
+run void (inl ());
+
+// The grandfather paradox has no consistent history: its trace is tohu.
+def grandfather : Bool <-> Bool = loop (id * not);
+expect grandfather (inl ()) => tohu;
+
+// Exchanging two fermions costs a sign...
+def exchange : Psi * Psi <-> Psi * Psi = swap*;
+run exchange (psi, psi);
+// ...and sending a fermion back in time costs another, so yanking still holds.
+def yank : Psi <-> Psi = loop swap*;
+run yank psi;
+
+// A superposition is a loop with two consistent histories. The feedback
+// controls whether `not` is applied; it is the right factor, so it is first
+// exchanged to the left, where it can be inspected.
+def both : Bool <-> Bool = loop[Bool]  (swap* ; distl ; ((id * id) + (id * not)) ; factorl ; swap*);
+def diff : Bool <-> Bool = loop[Fermi] (swap* ; distl ; ((id * id) + (id * not)) ; factorl ; swap*);
+run both (inl ());
+run diff (inl ());
+// (1 + X)(1 + X) = 2(1 + X), but (1 - X)(1 + X) = 1 - X^2 = 0.
+run both ; both (inl ());
+run both ; diff (inl ());
+table diff;
+
+// `~` is the adjoint, not the inverse. `diff` is self-adjoint and not invertible.
+expect ~diff (inl ()) => inl () - inr ();
+
+// `cup` makes a fermion pair from nothing, and `cap` is its adjoint. Built from
+// them, a trace over Psi needs one exchange, which is where its sign comes from.
+def bent : Bool <-> Bool =
+  unitir* ; (id * cup) ; assocl* ; assocr* ; (id * (swap* ; cap)) ; uniter*;
+expect bent (inl ()) => -inl ();

@@ -1,0 +1,3 @@
+type Bool = 1 + 1;
+// Which feedback? Its dimension is the answer, and Tohu will not guess it.
+def mystery : Bool <-> Bool = loop id;

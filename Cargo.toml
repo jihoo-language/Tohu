@@ -1,0 +1,8 @@
+[package]
+name = "tohu"
+version = "0.1.0"
+edition = "2021"
+description = "Interpreter for Tohu, a point-free super-linear language whose histories interfere"
+license = "Apache-2.0"
+
+[dependencies]

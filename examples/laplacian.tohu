@@ -1,0 +1,27 @@
+// The discrete Laplacian on the integers as a four-history time loop.
+
+type Nat = mu n. 1 + n;
+// inl n is n, inr n is -(n + 1).
+type Int = Nat + Nat;
+type Bool = 1 + 1;
+
+def succ : Int <-> Int =
+  (id + unfold) ; assocl+ ; ((swap+ ; fold) + id);
+
+// Two even histories step right and left. Two odd histories stay put, and
+// each of them counts -1.
+type Walk = Bool + (Psi + Psi);
+def lap : Int <-> Int =
+  loop[Walk] (swap* ; distl
+    ; ((distl ; ((id * succ) + (id * ~succ)) ; factorl) + id)
+    ; factorl ; swap*);
+
+run lap (inl 5);
+run lap (inl 0);
+// The square has the alternating fourth row of Pascal's triangle.
+run lap ; lap (inl 5);
+// A linear function is harmonic away from the ends of its support.
+run lap inl 1 + 2·inl 2 + 3·inl 3 + 4·inl 4;
+
+// The Laplacian is self-adjoint: running it backward changes nothing.
+expect ~lap (inl 3) => inl 2 - 2·inl 3 + inl 4;

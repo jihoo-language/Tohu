@@ -1,0 +1,37 @@
+// Aporia's arithmetic still runs: on values without fermions, every
+// primitive is a permutation and every sign is +1.
+
+type Nat = mu n. 1 + n;
+// inl n is n, inr n is -(n + 1).
+type Int = Nat + Nat;
+
+def succ : Int <-> Int =
+  (id + unfold) ; assocl+ ; ((swap+ ; fold) + id);
+
+// (n, a) |-> (n, a + n).
+def add : Nat * Int <-> Nat * Int =
+  (unfold * id) ; distl ; (id + (add ; (id * succ))) ; factorl ; (fold * id);
+
+// (a, b) |-> (a, b + a) on Int.
+def addz : Int * Int <-> Int * Int =
+  distl ; (add + (~add ; (id * ~succ))) ; factorl;
+
+run add (3, inl 5);
+run ~add (3, inl 5);
+
+// Aporia has no exchange, and asks whether the factors of Nat * Nat can be
+// exchanged at all, and whether the Fibonacci step is expressible. Tohu has
+// `swap*`, which costs nothing on values without fermions.
+def exchange : Nat * Nat <-> Nat * Nat = swap*;
+run exchange (2, 7);
+def fib : Int * Int <-> Int * Int = swap* ; addz;
+run fib ; fib ; fib ; fib ; fib ; fib ; fib ; fib ; fib ; fib (inl 0, inl 1);
+// Run backward, the step goes back to the start.
+run ~(fib ; fib ; fib ; fib ; fib ; fib ; fib ; fib ; fib ; fib) (inl 55, inl 89);
+
+// The same exchange on fermion-valued lists picks up a sign whenever both
+// lists have odd length.
+type Fs = mu x. 1 + Psi * x;
+def exf : Fs * Fs <-> Fs * Fs = swap*;
+run exf ([psi], [psi, psi, psi]);
+run exf ([psi], [psi, psi]);

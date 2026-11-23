@@ -1,0 +1,2 @@
+type Bool = 1 + 1;
+def neg : Bool <-> Bool = -id;

@@ -1,0 +1,25 @@
+// `iter` feeds histories back until none are left. They can cancel.
+
+type Bool  = 1 + 1;
+type Fermi = 1 + Psi;
+type Three = 1 + Bool;
+// inl () enters and leaves; the three values of Three circulate.
+type Q = 1 + Three;
+
+// Two permutations of Q. Under `iter`, each one alone returns.
+def g : Q <-> Q = id + (assocl+ ; swap+);
+def h : Q <-> Q = assocl+ ; (swap+ + swap+) ; assocr+;
+run iter g ();
+run iter h ();
+
+// Their sum and their difference, as loops with two histories.
+def bose  : Q <-> Q = loop[Bool]  (swap* ; distl ; ((id * g) + (id * h)) ; factorl ; swap*);
+def fermi : Q <-> Q = loop[Fermi] (swap* ; distl ; ((id * g) + (id * h)) ; factorl ; swap*);
+table fermi;
+
+// The sum never returns: its coefficients double on every pass until they
+// leave the 128-bit range.
+refute iter bose ();
+// The difference returns on the third pass. The two histories that leave
+// inr (inr (inl ())) both arrive at inr (inr (inr ())), with opposite signs.
+run iter fermi ();

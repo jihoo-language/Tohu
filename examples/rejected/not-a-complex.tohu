@@ -1,0 +1,4 @@
+type Bool = 1 + 1;
+def both : Bool <-> Bool = loop[Bool] (swap* ; distl ; ((id * id) + (id * swap+)) ; factorl ; swap*);
+// (1 + X)(1 + X) = 2(1 + X), which is not tohu.
+homology both, both;
